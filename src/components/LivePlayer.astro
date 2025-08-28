@@ -1,19 +1,33 @@
 ---
-const streamUrl = "http://95.214.234.140:8080/live/play/.../244976";
+const streamUrl = "http://95.214.234.140:8080/live/play/TUVKRU5sZzNkbmwwU0VGUFRGQjZkMWhYUmk5bmNGSnBSbGxJYmtaMFJFUldVM3AwVkdobFRsVllhejA9/244976";
 ---
 
-<video id="video" controls autoplay style="width:900px; height:600px; background:black;" />
+<video 
+  id="video" 
+  controls 
+  autoplay 
+  style="width:900px; height:600px; background:black; border-radius:10px;" 
+/>
 
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<!-- 👇 Pehle hls.js CDN se load karo -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
+
+<!-- 👇 Ab apna custom script likho -->
 <script>
-  const video = document.getElementById("video");
-  const streamUrl = "{{streamUrl}}";
+  window.addEventListener("load", () => {
+    const video = document.getElementById("video");
+    const streamUrl = "{{streamUrl}}";
 
-  if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(streamUrl);
-    hls.attachMedia(video);
-  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-    video.src = streamUrl;
-  }
+    if (window.Hls && Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(streamUrl);
+      hls.attachMedia(video);
+      console.log("✅ HLS Stream Loaded");
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = streamUrl;
+      console.log("✅ Native HLS Supported");
+    } else {
+      console.error("❌ HLS not supported in this browser");
+    }
+  });
 </script>
