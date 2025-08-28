@@ -2,21 +2,22 @@
 const streamUrl = "http://xtv.ooo:8080/live/938437191/952117166/167569.m3u8";
 ---
 
+<!-- 👇 stream-url ko data attribute ke andar inject karte hain -->
 <video 
   id="video" 
+  data-stream={streamUrl}
   controls 
   autoplay 
   style="width:900px; height:600px; background:black; border-radius:10px;" 
 />
 
-<!-- Load hls.js from CDN -->
+<!-- hls.js from CDN -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
 
-<!-- Apna custom script -->
 <script>
   window.addEventListener("load", () => {
     const video = document.getElementById("video");
-    const streamUrl = `${streamUrl}`; // 👈 Astro variable JS string me inject
+    const streamUrl = video.dataset.stream; // 👈 yahan se Astro ka value milega
 
     if (window.Hls && Hls.isSupported()) {
       const hls = new Hls();
