@@ -9,11 +9,11 @@ const streamUrl = "http://95.214.234.140:8080/live/play/TUVKRU5sZzNkbmwwU0VGUFRG
   style="width:900px; height:600px; background:black; border-radius:10px;" 
 />
 
-<!-- 👇 Ye script sirf browser side par chalega -->
 <script>
-  import("hls.js").then(Hls => {
+  // 👇 dynamic import - build time pe resolve nahi hoga
+  import("hls.js").then(({ default: Hls }) => {
     const video = document.getElementById("video");
-    const streamUrl = "{{streamUrl}}"; 
+    const streamUrl = "{{streamUrl}}";
 
     if (Hls.isSupported()) {
       const hls = new Hls();
