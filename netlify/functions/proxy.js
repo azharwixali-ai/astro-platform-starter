@@ -7,27 +7,29 @@ export async function handler(event) {
 
   try {
     const response = await fetch(targetUrl, {
+      redirect: "follow",  // 👈 important
       headers: {
-        "User-Agent": "VLC/3.0.16 LibVLC/3.0.16",
+        "User-Agent": "VLC/3.0.21 LibVLC/3.0.21",
         "Accept": "*/*",
-        "Connection": "keep-alive",
-        "Referer": base,
-        "Origin": base,
-        // agar server cookies use karta hai to yahan add karna hoga
-        "Cookie": event.headers["cookie"] || "",
+        "Accept-Language": "en_US",
+        "Cache-Control": "no-cache",
       }
     });
 
+    // Playlist (.m3u8)
     if (targetUrl.endsWith(".m3u8")) {
       let body = await response.text();
 
+      // Get final URL after redirects
+      const finalUrl = response.url.replace(/\/[^/]+$/, "");
+
+      // Rewrite .ts links to proxy
       body = body.replace(/(https?:\/\/[^ \n]+\.ts)/g, (match) => {
-        return `/.netlify/functions/proxy${match.replace(base, "")}`;
+        return `/.netlify/functions/proxy${match.replace(/^https?:\/\/[^/]+/, "")}`;
       });
 
       body = body.replace(/([^\s]+\.ts)/g, (match) => {
-        const prefix = path.substring(0, path.lastIndexOf("/"));
-        return `/.netlify/functions/proxy${prefix}/${match}`.replace(/\/+/g, "/");
+        return `/.netlify/functions/proxy${finalUrl.replace(/^https?:\/\/[^/]+/, "")}/${match}`.replace(/\/+/g, "/");
       });
 
       return {
@@ -40,7 +42,7 @@ export async function handler(event) {
       };
     }
 
-    // .ts segment handling
+    // Segments (.ts)
     const buffer = await response.buffer();
     return {
       statusCode: response.status,
