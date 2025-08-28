@@ -2,18 +2,21 @@ import fetch from "node-fetch";
 
 export async function handler(event) {
   const base = "http://xtv.ooo:8080"; // 👈 original server ka base
-  const path = event.path.replace("/.netlify/functions/proxy", ""); // relative path nikal lo
-  const targetUrl = `${base}${path || "/live/938437191/952117166/219689.m3u8"}`;
+  const path = event.path.replace("/.netlify/functions/proxy", ""); // proxy se relative path nikalo
+  const targetUrl = `${base}${path || "/live/938437191/952117166/167569.m3u8"}`;
 
   try {
     const response = await fetch(targetUrl);
 
-    // Agar request m3u8 file ka hai
+    // If request is for M3U8 playlist
     if (targetUrl.endsWith(".m3u8")) {
       let body = await response.text();
 
-      // Rewrite all .ts segment links to go through our proxy
-      body = body.replace(/(.*\.ts)/g, (match) => {
+      // Rewrite all .ts links to go through proxy
+      body = body.replace(/([^\s]+\.ts)/g, (match) => {
+        if (match.startsWith("http")) {
+          return `/.netlify/functions/proxy${match.replace(base, "")}`;
+        }
         return `/.netlify/functions/proxy${match}`;
       });
 
@@ -27,7 +30,7 @@ export async function handler(event) {
       };
     }
 
-    // Agar request TS segment ka hai
+    // If request is for TS segment
     const buffer = await response.arrayBuffer();
     return {
       statusCode: 200,
