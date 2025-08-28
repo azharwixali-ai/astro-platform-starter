@@ -7,29 +7,32 @@ export async function handler(event) {
 
   try {
     const response = await fetch(targetUrl, {
-      redirect: "follow",  // 👈 important
+      redirect: "follow",
       headers: {
         "User-Agent": "VLC/3.0.21 LibVLC/3.0.21",
         "Accept": "*/*",
         "Accept-Language": "en_US",
         "Cache-Control": "no-cache",
-      }
+        "Range": event.headers["range"] || "",
+      },
     });
 
     // Playlist (.m3u8)
     if (targetUrl.endsWith(".m3u8")) {
       let body = await response.text();
 
-      // Get final URL after redirects
-      const finalUrl = response.url.replace(/\/[^/]+$/, "");
+      // Final base URL after redirects
+      const finalUrl = new URL(response.url).origin;
 
-      // Rewrite .ts links to proxy
+      // Rewrite absolute .ts links
       body = body.replace(/(https?:\/\/[^ \n]+\.ts)/g, (match) => {
-        return `/.netlify/functions/proxy${match.replace(/^https?:\/\/[^/]+/, "")}`;
+        return `/.netlify/functions/proxy${new URL(match).pathname}`;
       });
 
+      // Rewrite relative .ts links
       body = body.replace(/([^\s]+\.ts)/g, (match) => {
-        return `/.netlify/functions/proxy${finalUrl.replace(/^https?:\/\/[^/]+/, "")}/${match}`.replace(/\/+/g, "/");
+        const prefix = path.substring(0, path.lastIndexOf("/"));
+        return `/.netlify/functions/proxy${prefix}/${match}`.replace(/\/+/g, "/");
       });
 
       return {
@@ -55,7 +58,6 @@ export async function handler(event) {
       body: buffer.toString("base64"),
       isBase64Encoded: true,
     };
-
   } catch (err) {
     return {
       statusCode: 502,
