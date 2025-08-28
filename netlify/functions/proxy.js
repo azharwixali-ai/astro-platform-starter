@@ -2,23 +2,25 @@ import fetch from "node-fetch";
 
 export async function handler(event) {
   const base = "http://xtv.ooo:8080";
-  const path = event.path.replace("/.netlify/functions/proxy", "");
+  const path = event.path.replace("/.netlify/functions/proxy", ""); 
   const targetUrl = `${base}${path || "/live/938437191/952117166/167569.m3u8"}`;
 
   try {
     const response = await fetch(targetUrl);
 
-    // If request is for playlist (.m3u8)
+    // Playlist (.m3u8)
     if (targetUrl.endsWith(".m3u8")) {
       let body = await response.text();
 
-      // Rewrite .ts links
+      // Absolute TS links → proxy ke through
       body = body.replace(/(https?:\/\/[^ \n]+\.ts)/g, (match) => {
         return `/.netlify/functions/proxy${match.replace(base, "")}`;
       });
 
+      // Relative TS links → clean join
       body = body.replace(/([^\s]+\.ts)/g, (match) => {
-        return `/.netlify/functions/proxy${path.substring(0, path.lastIndexOf("/"))}/${match}`;
+        const prefix = path.substring(0, path.lastIndexOf("/"));
+        return `/.netlify/functions/proxy${prefix}/${match}`.replace(/\/+/g, "/"); // 👈 double slash fix
       });
 
       return {
@@ -31,7 +33,8 @@ export async function handler(event) {
       };
     }
 
-    // If request is for segment (.ts)
+    // Segment (.ts)
+    const buffer = await response.buffer();
     return {
       statusCode: 200,
       headers: {
@@ -39,12 +42,13 @@ export async function handler(event) {
         "Access-Control-Allow-Origin": "*",
         "Accept-Ranges": "bytes",
       },
-      body: await response.buffer(),  // 👈 direct binary buffer
+      body: buffer.toString("base64"),
+      isBase64Encoded: true,
     };
 
   } catch (err) {
     return {
-      statusCode: 500,
+      statusCode: 502,
       body: "Proxy error: " + err.message,
     };
   }
