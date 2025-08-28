@@ -1,25 +1,23 @@
 import fetch from "node-fetch";
 
 export async function handler(event) {
-  const base = "http://xtv.ooo:8080"; // 👈 your original IPTV server
-  const path = event.path.replace("/.netlify/functions/proxy", ""); // remove proxy prefix
+  const base = "http://xtv.ooo:8080"; 
+  const path = event.path.replace("/.netlify/functions/proxy", ""); 
   const targetUrl = `${base}${path || "/live/938437191/952117166/167569.m3u8"}`;
 
   try {
     const response = await fetch(targetUrl);
 
-    // If request is for m3u8 playlist
+    // Playlist request
     if (targetUrl.endsWith(".m3u8")) {
       let body = await response.text();
 
-      // Rewrite all .ts links (absolute + relative)
+      // Rewrite segment links
       body = body.replace(/(https?:\/\/[^ \n]+\.ts)/g, (match) => {
-        // absolute URLs
         return `/.netlify/functions/proxy${match.replace(base, "")}`;
       });
 
       body = body.replace(/([^\s]+\.ts)/g, (match) => {
-        // relative paths
         return `/.netlify/functions/proxy${path.substring(0, path.lastIndexOf("/"))}/${match}`;
       });
 
@@ -33,13 +31,15 @@ export async function handler(event) {
       };
     }
 
-    // If request is for TS segment
+    // TS segment request (binary)
     const buffer = await response.arrayBuffer();
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "video/mp2t",
         "Access-Control-Allow-Origin": "*",
+        "Accept-Ranges": "bytes",   // 👈 important for seeking
+        "Cache-Control": "no-cache" // 👈 disable cache during testing
       },
       body: Buffer.from(buffer).toString("base64"),
       isBase64Encoded: true,
