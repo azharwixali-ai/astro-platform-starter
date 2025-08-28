@@ -8,19 +8,19 @@ export async function handler(event) {
   try {
     const response = await fetch(targetUrl, {
       headers: {
-        // 👇 Forward range requests
-        "Range": event.headers["range"] || "",
-        "User-Agent": event.headers["user-agent"] || "Mozilla/5.0",
+        "User-Agent": "VLC/3.0.16 LibVLC/3.0.16",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
         "Referer": base,
         "Origin": base,
+        // agar server cookies use karta hai to yahan add karna hoga
+        "Cookie": event.headers["cookie"] || "",
       }
     });
 
-    // Playlist
     if (targetUrl.endsWith(".m3u8")) {
       let body = await response.text();
 
-      // Rewrite .ts links
       body = body.replace(/(https?:\/\/[^ \n]+\.ts)/g, (match) => {
         return `/.netlify/functions/proxy${match.replace(base, "")}`;
       });
@@ -40,7 +40,7 @@ export async function handler(event) {
       };
     }
 
-    // Segments (.ts) → stream as binary (NO base64)
+    // .ts segment handling
     const buffer = await response.buffer();
     return {
       statusCode: response.status,
@@ -51,7 +51,7 @@ export async function handler(event) {
         "Access-Control-Allow-Origin": "*",
       },
       body: buffer.toString("base64"),
-      isBase64Encoded: true,  // ✅ Netlify needs this for binary
+      isBase64Encoded: true,
     };
 
   } catch (err) {
