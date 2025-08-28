@@ -6,21 +6,13 @@ export async function handler(event) {
   const targetUrl = `${base}${path || "/live/938437191/952117166/167569.m3u8"}`;
 
   try {
-    const response = await fetch(targetUrl, {
-      headers: {
-        // Forward common headers like VLC does
-        "User-Agent": "VLC/3.0.16 LibVLC/3.0.16",
-        "Accept": "*/*",
-        "Referer": base,
-        "Origin": base,
-      },
-    });
+    const response = await fetch(targetUrl);
 
-    // Playlist (.m3u8)
+    // If request is for playlist (.m3u8)
     if (targetUrl.endsWith(".m3u8")) {
       let body = await response.text();
 
-      // Rewrite segment URLs
+      // Rewrite .ts links
       body = body.replace(/(https?:\/\/[^ \n]+\.ts)/g, (match) => {
         return `/.netlify/functions/proxy${match.replace(base, "")}`;
       });
@@ -39,8 +31,7 @@ export async function handler(event) {
       };
     }
 
-    // Segment (.ts)
-    const buffer = await response.arrayBuffer();
+    // If request is for segment (.ts)
     return {
       statusCode: 200,
       headers: {
@@ -48,9 +39,9 @@ export async function handler(event) {
         "Access-Control-Allow-Origin": "*",
         "Accept-Ranges": "bytes",
       },
-      body: Buffer.from(buffer).toString("base64"),
-      isBase64Encoded: true,
+      body: await response.buffer(),  // 👈 direct binary buffer
     };
+
   } catch (err) {
     return {
       statusCode: 500,
