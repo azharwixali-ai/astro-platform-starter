@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 export async function handler(event) {
   const base = "http://xtv.ooo:8080"; // 👈 original server ka base
   const path = event.path.replace("/.netlify/functions/proxy", ""); // relative path nikal lo
-  const targetUrl = `${base}${path || "/live/938437191/952117166/167569.m3u8"}`;
+  const targetUrl = `${base}${path || "/live/938437191/952117166/219689.m3u8"}`;
 
   try {
     const response = await fetch(targetUrl);
