@@ -1,23 +1,26 @@
 import fetch from "node-fetch";
 
 export async function handler(event) {
-  const base = "http://xtv.ooo:8080"; // 👈 original server ka base
-  const path = event.path.replace("/.netlify/functions/proxy", ""); // proxy se relative path nikalo
+  const base = "http://xtv.ooo:8080"; // 👈 your original IPTV server
+  const path = event.path.replace("/.netlify/functions/proxy", ""); // remove proxy prefix
   const targetUrl = `${base}${path || "/live/938437191/952117166/167569.m3u8"}`;
 
   try {
     const response = await fetch(targetUrl);
 
-    // If request is for M3U8 playlist
+    // If request is for m3u8 playlist
     if (targetUrl.endsWith(".m3u8")) {
       let body = await response.text();
 
-      // Rewrite all .ts links to go through proxy
+      // Rewrite all .ts links (absolute + relative)
+      body = body.replace(/(https?:\/\/[^ \n]+\.ts)/g, (match) => {
+        // absolute URLs
+        return `/.netlify/functions/proxy${match.replace(base, "")}`;
+      });
+
       body = body.replace(/([^\s]+\.ts)/g, (match) => {
-        if (match.startsWith("http")) {
-          return `/.netlify/functions/proxy${match.replace(base, "")}`;
-        }
-        return `/.netlify/functions/proxy${match}`;
+        // relative paths
+        return `/.netlify/functions/proxy${path.substring(0, path.lastIndexOf("/"))}/${match}`;
       });
 
       return {
