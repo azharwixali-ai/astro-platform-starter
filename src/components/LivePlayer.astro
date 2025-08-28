@@ -1,26 +1,19 @@
 ---
-const streamUrl = "http://95.214.234.140:8080/live/play/TUVKRU5sZzNkbmwwU0VGUFRGQjZkMWhYUmk5bmNGSnBSbGxJYmtaMFJFUldVM3AwVkdobFRsVllhejA9/244976";
+const streamUrl = "http://95.214.234.140:8080/live/play/.../244976";
 ---
 
-<video 
-  id="video" 
-  controls 
-  autoplay 
-  style="width:900px; height:600px; background:black; border-radius:10px;" 
-/>
+<video id="video" controls autoplay style="width:900px; height:600px; background:black;" />
 
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <script>
-  // 👇 dynamic import - build time pe resolve nahi hoga
-  import("hls.js").then(({ default: Hls }) => {
-    const video = document.getElementById("video");
-    const streamUrl = "{{streamUrl}}";
+  const video = document.getElementById("video");
+  const streamUrl = "{{streamUrl}}";
 
-    if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(streamUrl);
-      hls.attachMedia(video);
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = streamUrl;
-    }
-  });
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(streamUrl);
+    hls.attachMedia(video);
+  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    video.src = streamUrl;
+  }
 </script>
