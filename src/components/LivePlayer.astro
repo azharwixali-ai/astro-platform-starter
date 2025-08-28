@@ -9,14 +9,14 @@ const streamUrl = "http://xtv.ooo:8080/live/938437191/952117166/167569.m3u8";
   style="width:900px; height:600px; background:black; border-radius:10px;" 
 />
 
-<!-- 👇 Pehle hls.js CDN se load karo -->
+<!-- Load hls.js from CDN -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
 
-<!-- 👇 Ab apna custom script likho -->
+<!-- Apna custom script -->
 <script>
   window.addEventListener("load", () => {
     const video = document.getElementById("video");
-    const streamUrl = "{{streamUrl}}";
+    const streamUrl = `${streamUrl}`; // 👈 Astro variable JS string me inject
 
     if (window.Hls && Hls.isSupported()) {
       const hls = new Hls();
