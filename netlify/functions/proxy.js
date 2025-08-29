@@ -48,22 +48,28 @@ export async function handler(event) {
 }
 
     // Segments (.ts)
-    const buffer = await response.buffer();
-    return {
-      statusCode: response.status,
-      headers: {
-        "Content-Type": "video/mp2t",
-        "Content-Length": buffer.length,
-        "Accept-Ranges": "bytes",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: buffer.toString("base64"),
-      isBase64Encoded: true,
-    };
-  } catch (err) {
-    return {
-      statusCode: 502,
-      body: "Proxy error: " + err.message,
-    };
+const response = await fetch(targetUrl, {
+  headers: {
+    "User-Agent": "VLC/3.0.21 LibVLC/3.0.21",
+    "Accept": "*/*",
+    "Accept-Language": "en_US",
+    "Accept-Encoding": "deflate, gzip",
+    "Cache-Control": "no-cache",
+    "Range": event.headers["range"] || ""
   }
+});
+const buffer = await response.buffer();
+
+return {
+  statusCode: response.status,
+  headers: {
+    "Content-Type": "video/mp2t",
+    "Content-Length": buffer.length,
+    "Accept-Ranges": "bytes",
+    "Access-Control-Allow-Origin": "*",
+  },
+  body: buffer.toString("base64"),
+  isBase64Encoded: true,
+};
+
 }
