@@ -19,31 +19,33 @@ export async function handler(event) {
 
     // Playlist (.m3u8)
     if (targetUrl.endsWith(".m3u8")) {
-      let body = await response.text();
+  let body = await response.text();
 
-      // Final base URL after redirects
-      const finalUrl = new URL(response.url).origin;
-
-      // Rewrite absolute .ts links
-      body = body.replace(/(https?:\/\/[^ \n]+\.ts)/g, (match) => {
-        return `/.netlify/functions/proxy${new URL(match).pathname}`;
-      });
-
-      // Rewrite relative .ts links
-      body = body.replace(/([^\s]+\.ts)/g, (match) => {
-        const prefix = path.substring(0, path.lastIndexOf("/"));
-        return `/.netlify/functions/proxy${prefix}/${match}`.replace(/\/+/g, "/");
-      });
-
-      return {
-        statusCode: 200,
-        headers: {
-          "Content-Type": "application/vnd.apple.mpegurl",
-          "Access-Control-Allow-Origin": "*",
-        },
-        body,
-      };
+  // Absolute .ts links (http://....ts)
+  body = body.replace(/(https?:\/\/[^\s]+\.ts)/g, (match) => {
+    try {
+      const url = new URL(match);
+      return `/.netlify/functions/proxy${url.pathname}`;
+    } catch (e) {
+      return match; // fallback
     }
+  });
+
+  // Relative .ts links (167569_123.ts)
+  body = body.replace(/(^|\n)([^ \n]+\.ts)/g, (full, p1, p2) => {
+    const prefix = path.substring(0, path.lastIndexOf("/"));
+    return `${p1}/.netlify/functions/proxy${prefix}/${p2}`.replace(/\/+/g, "/");
+  });
+
+  return {
+    statusCode: 200,
+    headers: {
+      "Content-Type": "application/vnd.apple.mpegurl",
+      "Access-Control-Allow-Origin": "*",
+    },
+    body,
+  };
+}
 
     // Segments (.ts)
     const buffer = await response.buffer();
