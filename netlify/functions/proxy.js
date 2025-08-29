@@ -48,23 +48,32 @@ export async function handler(event) {
     }
 
     // ✅ Agar segment (.ts) hai
-    const buffer = await response.buffer();
-    return {
-      statusCode: response.status,
-      headers: {
-        "Content-Type": "video/mp2t",
-        "Content-Length": buffer.length,
-        "Accept-Ranges": "bytes",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: buffer.toString("base64"),
-      isBase64Encoded: true,
-    };
+    // Agar segment (.ts) hai
+if (targetUrl.endsWith(".ts")) {
+  const segResponse = await fetch(targetUrl, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "VLC/3.0.21 LibVLC/3.0.21",
+      "Accept": "*/*",
+      "Accept-Language": "en_US",
+      "Cache-Control": "no-cache",
+      "Range": event.headers["range"] || "bytes=0-"
+    }
+  });
 
-  } catch (err) {
-    return {
-      statusCode: 502,
-      body: "Proxy error: " + err.message,
-    };
-  }
+  const buffer = await segResponse.buffer();
+
+  return {
+    statusCode: segResponse.status,
+    headers: {
+      "Content-Type": "video/mp2t",
+      "Content-Length": buffer.length,
+      "Accept-Ranges": "bytes",
+      "Access-Control-Allow-Origin": "*",
+    },
+    body: buffer.toString("base64"),
+    isBase64Encoded: true,
+  };
+}
+
 }
