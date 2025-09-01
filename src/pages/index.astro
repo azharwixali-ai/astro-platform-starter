@@ -4,36 +4,64 @@ import ContextAlert from '../components/ContextAlert.astro';
 import Markdown from '../components/Markdown.astro';
 ---
 
-<Layout title="jececafe">
-  <!-- Title -->
-  <h1 class="text-center text-4xl font-bold mb-8">jececafe</h1>
-
-  <!-- Unity WebGL Game -->
-  <section class="flex justify-center">
-    <div id="unityContainer" style="width: 1000px; height: 700px; background: #000;"></div>
-  </section>
-
-  <!-- Unity Loader Script -->
+<Layout title="Casino">
+  <!-- Game content wrapper -->
+  <div id="orientation-lock" class="relative w-full h-full">
+    <!-- Orientation Blocker -->
+    <div id="portrait-blocker" class="fixed inset-0 z-50 bg-black text-white flex flex-col items-center justify-center text-center px-6 hidden">
+      <h2 class="text-2xl font-bold mb-4">Please rotate your device</h2>
+      <p class="text-base text-gray-300">This game is best experienced in landscape mode.</p>
+    </div>
+    <!-- Game iframe -->
+    <!-- Game iframe -->
+    <h1 class="text-center text-4xl font-bold my-10">Welcome to the Casino</h1>
+    <div class="flex flex-col items-center">
+      <iframe
+        src="/unity/index.html"
+        width="1000"
+        height="700"
+        allow="fullscreen"
+        class="border border-gray-300 rounded-lg"
+      ></iframe>
+      <!-- Play on Itch.io Button -->
+     <a
+  href="https://yourgame.itch.io/casino"
+  target="_blank"
+  class="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg transition no-underline"
+>
+  :video_game: Play on Itch.io
+</a>
+    </div>
+  <!-- Orientation detection script -->
   <script is:inline>
-  if (!HTMLCanvasElement.prototype.getContextSafariWebGL2Fixed) {
-    HTMLCanvasElement.prototype.getContextSafariWebGL2Fixed = function (type, attrs) {
-      return this.getContext(type, attrs);
-    };
-  }
-</script>
+    function handleOrientation() {
+      const blocker = document.getElementById('portrait-blocker');
+      const isPortrait = window.innerHeight > window.innerWidth;
+      const isMobile = window.innerWidth < 768;
+      if (isPortrait && isMobile) {
+        blocker.classList.remove('hidden');
+      } else {
+        blocker.classList.add('hidden');
+      }
+    }
+    window.addEventListener('load', handleOrientation);
+    window.addEventListener('resize', handleOrientation);
+    window.addEventListener('orientationchange', handleOrientation);
+  </script>
 
-<script src="/unity/Build/webgl.loader.js" is:inline></script>
-<script is:inline>
-  createUnityInstance(document.querySelector("#unityContainer"), {
-    dataUrl: "/unity/Build/webgl.data",
-    frameworkUrl: "/unity/Build/webgl.framework.js",
-    codeUrl: "/unity/Build/webgl.wasm",
-    streamingAssetsUrl: "/unity/StreamingAssets",
-  }).then((unityInstance) => {
-    console.log("Unity WebGL game loaded!");
-  }).catch((message) => {
-    console.error(message);
-  });
-</script>
 
-</Layout>
+
+
+
+
+
+Jot something down
+
+
+
+
+
+
+
+
+
