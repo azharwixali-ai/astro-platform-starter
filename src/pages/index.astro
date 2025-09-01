@@ -14,17 +14,26 @@ import Markdown from '../components/Markdown.astro';
   </section>
 
   <!-- Unity Loader Script -->
-  <script src="/unity/Build/webgl.loader.js" is:inline></script>
   <script is:inline>
-    createUnityInstance(document.querySelector("#unityContainer"), {
-      dataUrl: "/unity/Build/webgl.data",
-      frameworkUrl: "/unity/Build/webgl.framework.js",
-      codeUrl: "/unity/Build/webgl.wasm",
-      streamingAssetsUrl: "/unity/StreamingAssets", // 👈 build se bahar path set karna zaroori hai
-    }).then((unityInstance) => {
-      console.log("Unity WebGL game loaded!");
-    }).catch((message) => {
-      console.error(message);
-    });
-  </script>
+  if (!HTMLCanvasElement.prototype.getContextSafariWebGL2Fixed) {
+    HTMLCanvasElement.prototype.getContextSafariWebGL2Fixed = function (type, attrs) {
+      return this.getContext(type, attrs);
+    };
+  }
+</script>
+
+<script src="/unity/Build/webgl.loader.js" is:inline></script>
+<script is:inline>
+  createUnityInstance(document.querySelector("#unityContainer"), {
+    dataUrl: "/unity/Build/webgl.data",
+    frameworkUrl: "/unity/Build/webgl.framework.js",
+    codeUrl: "/unity/Build/webgl.wasm",
+    streamingAssetsUrl: "/unity/StreamingAssets",
+  }).then((unityInstance) => {
+    console.log("Unity WebGL game loaded!");
+  }).catch((message) => {
+    console.error(message);
+  });
+</script>
+
 </Layout>
