@@ -14,17 +14,18 @@ import Markdown from '../components/Markdown.astro';
   </section>
 
   <!-- Unity Loader Script -->
-  <script src="/unity/webgl.loader.js" is:inline></script>
+ <script src="/unity/webgl.loader.js" is:inline></script>
 <script is:inline>
   createUnityInstance(document.querySelector("#unityContainer"), {
-    dataUrl: "/unity/webgl.data.gz",
-    frameworkUrl: "/unity/webgl.framework.js.gz",
-    codeUrl: "/unity/webgl.wasm.gz",
+    dataUrl: "/unity/webgl.data",
+    frameworkUrl: "/unity/webgl.framework.js",
+    codeUrl: "/unity/webgl.wasm",
   }).then((unityInstance) => {
     console.log("Unity WebGL game loaded!");
   }).catch((message) => {
     console.error(message);
   });
 </script>
+
 
 </Layout>
